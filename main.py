@@ -1,6 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
+import json
+import time
 
 
 # Base URL
@@ -20,7 +22,7 @@ sizes = []
 loopProductUrl = []
 
 # Loop for pages, e.g. range(1,10) means from 1 to 9 pages, data will be scraped
-for i in range(1, 3):
+for i in range(1, 10):
 
     url = 'https://www.flipkart.com/search?q=tops+for+women+wear&sid=clo%2Cash%2Cohw%2C36j&as=on&as-show=on&otracker=AS_QueryStore_OrganicAutoSuggest_1_10_na_na_na&otracker1=AS_QueryStore_OrganicAutoSuggest_1_10_na_na_na&as-pos=1&as-type=RECENT&suggestionId=tops+for+women+wear%7CWomen%27s+Tops&requestId=a64fd899-7a7a-4b48-8345-ca590a611d6e&as-searchtext=Women+Wear&page=' + \
         str(i)
@@ -41,10 +43,11 @@ for i in range(1, 3):
         loopProductUrl.append(productUrl)
         product_urls.append(productUrl)
         titles.append(title)
+    time.sleep(1)
 
     # Looping through the link of all the product URL and collecting Images, Sizes and other stuff
     for link in loopProductUrl:
-        print(link)
+        # print(link)
         # link = product_urls[0]
         res = requests.get(link)
         cont = res.content
@@ -99,13 +102,14 @@ for i in range(1, 3):
         colors = []
         sizes = []
     loopProductUrl = []
+    time.sleep(1)
 
 
 # Printing Lengths
-print(len(titles), len(product_urls))
-print(len(productColors))
-print(len(productSizes))
-print(len(images))
+# print(len(titles), len(product_urls))
+# print(len(productColors))
+# print(len(productSizes))
+# print(len(images))
 
 
 # Making DataFrame and Inserting it into the .csv
@@ -114,3 +118,20 @@ df = pd.DataFrame({"Name": titles, "Product_URL": product_urls,
                   "Colors": productColors, "Size": productSizes, "Image Url": images})
 
 df.to_csv('Flipkart.csv', index=False, encoding='utf-8')
+
+
+data_json = []
+
+for i in range(len(titles)):
+    data_json.append({
+        "Title" : titles[i],
+        "Product" : product_urls[i],
+        "Colours" : productColors[i],
+        "Size":productSizes[i],
+        "ImageUrl":images[i]
+    })
+
+print(data_json)
+
+with open("Flipkart_Data.json", "w") as outfile:
+    json.dump({"Data":data_json}, outfile)
