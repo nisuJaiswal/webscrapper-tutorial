@@ -4,19 +4,19 @@ import pandas as pd
 
 url = 'https://www.flipkart.com/search?q=tops+for+women+wear&sid=clo%2Cash%2Cohw%2C36j&as=on&as-show=on&otracker=AS_QueryStore_OrganicAutoSuggest_1_10_na_na_na&otracker1=AS_QueryStore_OrganicAutoSuggest_1_10_na_na_na&as-pos=1&as-type=RECENT&suggestionId=tops+for+women+wear%7CWomen%27s+Tops&requestId=a64fd899-7a7a-4b48-8345-ca590a611d6e&as-searchtext=Women+Wear&page=' + \
     str(1)
-baseUrl = 'https://www.flipkart.com/'
+baseUrl = 'https://www.flipkart.com'
 
 res = requests.get(url)
 content = res.content
 # print(content)
 
-titles = []
+titles = []  # done
 descs = []
-images = []
-product_urls = []
-
+images = []  # done
+product_urls = []  # done
 
 soup = BeautifulSoup(content, features='html.parser')
+
 for product in soup.findAll('div', attrs={"class": "_1xHGtK"}):
     title = product.find('a', attrs={"class": "IRpwTa"}).text
     tempUrl = product.a['href']
@@ -24,4 +24,31 @@ for product in soup.findAll('div', attrs={"class": "_1xHGtK"}):
     product_urls.append(productUrl)
     titles.append(title)
 
+for link in product_urls:
+    # print(link)
+    res = requests.get(link)
+    cont = res.content
+    singleProductImg = []
+    singleProductColor = []
+
+    anotherSoup = BeautifulSoup(cont, features='html.parser')
+    ul = anotherSoup.find('ul', attrs={"class": "_3GnUWp"})
+    # print(ul)
+    for li in ul.findAll('li', attrs={"class": "_20Gt85"}):
+        imgSrc = li.find('img')['src']
+        singleProductImg.append(imgSrc)
+    images.append(singleProductImg)
+
+    # colorUl = anotherSoup.findAll('ul', attrs={"class": "_1q8vHb"})
+    # # print(colorUl)
+    # if len(colorUl) == 2:
+    #     print("inside")
+    #     for li in colorUl.findAll('li', attrs={"class": "_3V2wfe"}):
+    #         print(li)
+    #         # singeColor = li.find('div', attrs={"class": "_3Oikkn"}).text
+    #         # print(singeColor)
+    #         # singleProductColor.append(singeColor)
+    # # singleProductColor.append([])
 print(len(titles), len(product_urls))
+print(len(images))
+# print(len(singleProductColor))
