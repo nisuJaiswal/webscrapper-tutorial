@@ -1,56 +1,27 @@
-import pandas as pd
-from selenium import webdriver
+import requests
 from bs4 import BeautifulSoup
+import pandas as pd
 
-options = webdriver.ChromeOptions()
-options.page_load_strategy = 'normal'
-options.add_argument('--start-maximized')
-driver = webdriver.Chrome(options=options)
+url = 'https://www.flipkart.com/search?q=tops+for+women+wear&sid=clo%2Cash%2Cohw%2C36j&as=on&as-show=on&otracker=AS_QueryStore_OrganicAutoSuggest_1_10_na_na_na&otracker1=AS_QueryStore_OrganicAutoSuggest_1_10_na_na_na&as-pos=1&as-type=RECENT&suggestionId=tops+for+women+wear%7CWomen%27s+Tops&requestId=a64fd899-7a7a-4b48-8345-ca590a611d6e&as-searchtext=Women+Wear&page=' + \
+    str(1)
+baseUrl = 'https://www.flipkart.com/'
 
-models = []
-prices = []
+res = requests.get(url)
+content = res.content
+# print(content)
+
+titles = []
+descs = []
 images = []
+product_urls = []
 
-driver.get("https://www.footshop.eu/en/5-mens-shoes")
-driver.get('https://www.footshop.eu/en/m/en')
-# driver.get('https://www.youtube.com/')
 
-total_height = driver.execute_script("return document.body.scrollHeight")
-
-# Scroll smoothly using JavaScript
-for y in range(0, total_height, 40):  # Adjust the step size as needed
-    driver.execute_script(f"window.scrollTo(0, {y});")
-
-# Scroll to the bottom of the page
-driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-
-content = driver.page_source
 soup = BeautifulSoup(content, features='html.parser')
+for product in soup.findAll('div', attrs={"class": "_1xHGtK"}):
+    title = product.find('a', attrs={"class": "IRpwTa"}).text
+    tempUrl = product.a['href']
+    productUrl = baseUrl + tempUrl
+    product_urls.append(productUrl)
+    titles.append(title)
 
-
-def getData():
-
-    for element in soup.findAll('div', attrs={'class': 'Products_product_1JtLQ'}):
-        model = element.find('h4', attrs={'class': 'Product_name_1Go7D'})
-        price = element.find(
-            'div', attrs={'class': 'ProductPrice_price_J4pAM'})
-        image = element.find('img', attrs={'class': 'LazyImage_image_3wH1D'})
-
-        models.append(model.text)
-        if price:
-            prices.append(price.strong.text)
-        if image:
-            img_src = image['src']
-            images.append(img_src)
-
-    df = pd.DataFrame(
-        {"Product Name": models, "Price": prices, "Image": images})
-
-    df.to_csv('shoes.csv', index=False, encoding='utf-8',
-              mode='a')
-
-
-getData()
-
-# Create a dataframe and save to CSV
-# df = pd.DataFrame({"Product Name": models, "Price": prices, "Image": images})
+print(len(titles), len(product_urls))

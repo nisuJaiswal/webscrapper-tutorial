@@ -1,0 +1,5 @@
+product Title,
+description,
+multiple images,
+product url--> which redirects to the page of product
+colors
