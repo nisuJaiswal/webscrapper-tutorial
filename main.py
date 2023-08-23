@@ -8,7 +8,7 @@ import time
 # Base URL
 baseUrl = 'https://www.flipkart.com'
 titles = []  # done
-descs = []
+description = []
 images = []  # done
 product_urls = []  # done
 productSizes = []  # done
@@ -19,10 +19,11 @@ singleProductImg = []
 singleProductColor = []
 colors = []
 sizes = []
+singleProductDescription = []
 loopProductUrl = []
 
 # Loop for pages, e.g. range(1,10) means from 1 to 9 pages, data will be scraped
-for i in range(1, 10):
+for i in range(1,10):
 
     url = 'https://www.flipkart.com/search?q=tops+for+women+wear&sid=clo%2Cash%2Cohw%2C36j&as=on&as-show=on&otracker=AS_QueryStore_OrganicAutoSuggest_1_10_na_na_na&otracker1=AS_QueryStore_OrganicAutoSuggest_1_10_na_na_na&as-pos=1&as-type=RECENT&suggestionId=tops+for+women+wear%7CWomen%27s+Tops&requestId=a64fd899-7a7a-4b48-8345-ca590a611d6e&as-searchtext=Women+Wear&page=' + \
         str(i)
@@ -58,6 +59,7 @@ for i in range(1, 10):
         if ul:
             for li in ul.findAll('li', attrs={"class": "_20Gt85"}):
                 imgSrc = li.find('img')['src']
+                imgSrc = imgSrc.replace('/128/128/','/832/832/') # converting the size of the image
                 singleProductImg.append(imgSrc)
         # print(singleProductImg)
         else:
@@ -96,11 +98,29 @@ for i in range(1, 10):
             productSizes.append(sizes)
             productColors.append(colors)
 
+        # Getting the description
+        descriptionDivs = anotherSoup.find_all('div', attrs={"class":"K4SXrT"})
+
+        if descriptionDivs:
+            # print(len(descriptionDivs))
+            for feature in descriptionDivs:
+                featureTitle = feature.find('div', attrs = {"class":"_3qWObK"}).text
+                featureText = feature.find('div', attrs = {"class":"_3zQntF"}).p.text
+                singleProductDescription.append([featureTitle,featureText])
+                # print([featureTitle,featureText])
+        else:
+            singleProductDescription = []
+
+        description.append(singleProductDescription)
+
+
         # Clearing all the temporary purpose Lists, got my 2 hours to solve this :(
         singleProductImg = []
         singleProductColor = []
         colors = []
         sizes = []
+        singleProductDescription = []
+
     loopProductUrl = []
     time.sleep(1)
 
@@ -114,24 +134,25 @@ for i in range(1, 10):
 
 # Making DataFrame and Inserting it into the .csv
 
-df = pd.DataFrame({"Name": titles, "Product_URL": product_urls,
-                  "Colors": productColors, "Size": productSizes, "Image Url": images})
+# df = pd.DataFrame({"Name": titles, "Product_URL": product_urls,
+#                   "Colors": productColors, "Size": productSizes, "Image Url": images})
 
-df.to_csv('Flipkart.csv', index=False, encoding='utf-8')
+# df.to_csv('Flipkart_2.csv', index=False, encoding='utf-8')
 
-
+# Getting JSON Data
 data_json = []
 
 for i in range(len(titles)):
     data_json.append({
         "Title" : titles[i],
-        "Product" : product_urls[i],
+        "Product_URL" : product_urls[i],
         "Colours" : productColors[i],
         "Size":productSizes[i],
+        "Description":description[i],
         "ImageUrl":images[i]
     })
 
 print(data_json)
 
-with open("Flipkart_Data.json", "w") as outfile:
+with open("Flipkart_Data_2.json", "w") as outfile:
     json.dump({"Data":data_json}, outfile)
