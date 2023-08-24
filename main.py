@@ -19,11 +19,11 @@ singleProductImg = []
 singleProductColor = []
 colors = []
 sizes = []
-singleProductDescription = []
+singleProductDescription = {}
 loopProductUrl = []
 
 # Loop for pages, e.g. range(1,10) means from 1 to 9 pages, data will be scraped
-for i in range(1,10):
+for i in range(1,25):
 
     url = 'https://www.flipkart.com/search?q=tops+for+women+wear&sid=clo%2Cash%2Cohw%2C36j&as=on&as-show=on&otracker=AS_QueryStore_OrganicAutoSuggest_1_10_na_na_na&otracker1=AS_QueryStore_OrganicAutoSuggest_1_10_na_na_na&as-pos=1&as-type=RECENT&suggestionId=tops+for+women+wear%7CWomen%27s+Tops&requestId=a64fd899-7a7a-4b48-8345-ca590a611d6e&as-searchtext=Women+Wear&page=' + \
         str(i)
@@ -82,8 +82,8 @@ for i in range(1,10):
             for li in colorUl[1].findAll('li', attrs={"class": "_3V2wfe"}):
                 tempSize = li.a.text
                 sizes.append(tempSize)
-            productSizes.append(sizes)
-            productColors.append(colors)
+            # productSizes.append(', '.join(sizes))
+            # productColors.append(', '.join(colors))
 
         elif len(colorUl) == 1:
             for li in colorUl[0].findAll('li', attrs={"class": "_3V2wfe"}):
@@ -93,24 +93,36 @@ for i in range(1,10):
             productSizes.append(sizes)
             productColors.append([])
         else:
-            colors.append([])
-            sizes.append([])
-            productSizes.append(sizes)
-            productColors.append(colors)
+            colors.append('')
+            sizes.append('')
+            # productSizes.append(sizes)
+            # productColors.append(colors)
 
         # Getting the description
-        descriptionDivs = anotherSoup.find_all('div', attrs={"class":"K4SXrT"})
+        descriptionDivs = anotherSoup.find_all('div', attrs={"class":"X3BRps"})
+        if(descriptionDivs):
+            descriptionDivs = descriptionDivs[0].find_all('div', attrs={"class":"row"})  #array of divs with class row
+            # print(descriptionDivs)
 
-        if descriptionDivs:
-            # print(len(descriptionDivs))
-            for feature in descriptionDivs:
-                featureTitle = feature.find('div', attrs = {"class":"_3qWObK"}).text
-                featureText = feature.find('div', attrs = {"class":"_3zQntF"}).p.text
-                singleProductDescription.append([featureTitle,featureText])
-                # print([featureTitle,featureText])
+            if descriptionDivs:
+                print(len(descriptionDivs))
+                for feature in descriptionDivs:
+                    featureTitle = feature.find('div', attrs = {"class":"_2H87wv"}).text
+                    featureText = feature.find('div', attrs = {"class":"_2vZqPX"}).text
+                    singleProductDescription[featureTitle]=featureText
+                    # print([featureTitle,featureText])
+                if colors:
+                    print(colors)
+                    singleProductDescription["Colours"] = ','.join(colors)
+                if sizes:
+                    singleProductDescription["Sizes"] = ','.join(sizes)
+            else:
+                singleProductDescription = {}
         else:
-            singleProductDescription = []
+            singleProductDescription = {}
 
+
+        # print(singleProductDescription)
         description.append(singleProductDescription)
 
 
@@ -119,7 +131,7 @@ for i in range(1,10):
         singleProductColor = []
         colors = []
         sizes = []
-        singleProductDescription = []
+        singleProductDescription = {}
 
     loopProductUrl = []
     time.sleep(1)
@@ -144,15 +156,13 @@ data_json = []
 
 for i in range(len(titles)):
     data_json.append({
-        "Title" : titles[i],
-        "Product_URL" : product_urls[i],
-        "Colours" : productColors[i],
-        "Size":productSizes[i],
-        "Description":description[i],
-        "ImageUrl":images[i]
+        "title" : titles[i],
+        "description":description[i],
+        "productUrl" : product_urls[i],
+        "images":images[i]
     })
 
-print(data_json)
+print(len(data_json))
 
-with open("Flipkart_Data_2.json", "w") as outfile:
+with open("Flipkart_Data_3.json", "w") as outfile:
     json.dump({"Data":data_json}, outfile)
