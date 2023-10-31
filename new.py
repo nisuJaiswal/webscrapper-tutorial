@@ -11,7 +11,8 @@ images = []
 descriptions = []
 prices = []
 
-for page in range(1, 2):
+for page in range(1, 11):
+    print(f"Collecting data fron Page {page}...")
     # Construct the URL for the current page
     page_url = f"https://www.bonjourretail.com/search?page={page}&q=Top&type=product"
 
